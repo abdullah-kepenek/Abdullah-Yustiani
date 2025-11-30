@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Abdullah & Yustiani Indah – Miss You Page</title>
-  <meta name="description" content="Abdullah and Yustiani Indah's special miss you page with shared messages.">
+  <meta name="description" content="Abdullah and Yustiani Indah's special miss you page with shared messages and polls.">
   <meta name="robots" content="index, follow">
 
   <style>
@@ -88,6 +88,14 @@
       resize: vertical;
       margin-top: 6px;
     }
+    input[type="text"] {
+      width: 100%;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      padding: 8px 10px;
+      margin-top: 6px;
+    }
     button {
       margin-top: 8px;
       padding: 8px 18px;
@@ -121,6 +129,31 @@
     }
     #messageList .author {
       font-weight: bold;
+    }
+    /* Poll styles */
+    #pollOptions {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 10px;
+    }
+    #pollOptions li {
+      margin-bottom: 6px;
+      font-size: 14px;
+      background: rgba(0,0,0,0.1);
+      padding: 6px 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #pollQuestionText {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .small {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 6px;
     }
     footer {
       margin-top: 30px;
@@ -178,10 +211,42 @@
         <li>Loading messages...</li>
       </ul>
 
-      <p style="font-size:12px; opacity:0.8; margin-top:8px;">
+      <p class="small">
         Messages are stored in a shared Firestore database.  
         İkiniz de bu sayfayı açtığınızda, bugünkü tüm mesajları görebilirsiniz. 💌
       </p>
+    </div>
+  </div>
+
+  <!-- Poll card -->
+  <div class="section">
+    <div class="card">
+      <h3>🎯 Today’s Question / Poll</h3>
+
+      <p><strong>Create a new question (Abdullah):</strong></p>
+      <label for="newPollQuestion">Question:</label>
+      <textarea id="newPollQuestion" placeholder="Example: Which surah should we read together tonight?"></textarea>
+
+      <label for="newPollOptions">Options (one per line):</label>
+      <textarea id="newPollOptions" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+
+      <button id="createPollBtn">Create / Update today’s question</button>
+
+      <hr>
+
+      <p><strong>Current question:</strong></p>
+      <div id="pollArea">
+        <div id="pollQuestionText">No question yet.</div>
+        <ul id="pollOptions"></ul>
+
+        <button id="voteAbdBtn">Vote as Abdullah</button>
+        <button id="voteYuiBtn">Vote as Yustiani</button>
+
+        <p class="small">
+          You can select one option and then vote as Abdullah or Yustiani.  
+          Oylamalar Firestore’da saklanır, ikiniz de sonucu görebilirsiniz.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -191,7 +256,7 @@
 
   <!-- FIREBASE + APP LOGIC -->
   <script type="module">
-    // 1) Firebase SDK'ları (CDN'den)
+    // 1) Firebase SDK'ları (CDN)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
       getFirestore,
@@ -201,10 +266,11 @@
       query,
       where,
       orderBy,
-      serverTimestamp
+      serverTimestamp,
+      limit
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // 2) SENİN FIREBASE CONFIG'İN (senin ekran görüntünden aldım)
+    // 2) Senin Firebase config'in
     const firebaseConfig = {
       apiKey: "AIzaSyB-9cGEGIDxdRSbCmKLyNNB3c1pTeCXzIw",
       authDomain: "abdullah-yustiani-page.firebaseapp.com",
@@ -218,7 +284,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Küçük yardımcı: bugünün tarihi (YYYY-MM-DD)
     const todayISO = () => new Date().toISOString().slice(0, 10);
 
     // ---------- Miss you bar ----------
@@ -242,16 +307,17 @@
       const target = new Date("2025-12-20T00:00:00");
       const now = new Date();
       const diff = target - now;
+      const el = document.getElementById("countdownText");
       if (diff <= 0) {
-        document.getElementById("countdownText").textContent = "Today is the day! 💖";
+        el.textContent = "Today is the day! 💖";
         return;
       }
       const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-      document.getElementById("countdownText").textContent = days + " days left";
+      el.textContent = days + " days left";
     }
     updateCountdown();
 
-    // ---------- Firestore: mesaj gönder ----------
+    // ---------- Firestore: mesajlar ----------
     async function sendMessage(author, text) {
       if (!text) return;
       try {
@@ -264,11 +330,10 @@
         await loadMessages();
       } catch (err) {
         console.error("Error sending message:", err);
-        alert("Message could not be sent. Check console for details.");
+        alert("Message could not be sent.");
       }
     }
 
-    // ---------- Firestore: bugünkü mesajları yükle ----------
     async function loadMessages() {
       const listEl = document.getElementById("messageList");
       listEl.innerHTML = "<li>Loading...</li>";
@@ -282,7 +347,6 @@
         const snap = await getDocs(q);
 
         listEl.innerHTML = "";
-
         if (snap.empty) {
           listEl.innerHTML = "<li>No messages yet today.</li>";
           return;
@@ -306,7 +370,6 @@
       }
     }
 
-    // ---------- Buton eventleri ----------
     document.getElementById("sendAbd").addEventListener("click", () => {
       const text = document.getElementById("msgAbdullah").value.trim();
       document.getElementById("msgAbdullah").value = "";
@@ -319,8 +382,155 @@
       sendMessage("Yustiani", text);
     });
 
-    // ---------- Sayfa açılınca bugünkü mesajları yükle ----------
+    // ---------- Poll (soru kartı) ----------
+    let currentPollId = null;
+    let currentPollOptions = [];
+
+    const pollQuestionTextEl = document.getElementById("pollQuestionText");
+    const pollOptionsEl = document.getElementById("pollOptions");
+
+    // Yeni anket oluştur (Abdullah tarafı)
+    async function createPoll() {
+      const qText = document.getElementById("newPollQuestion").value.trim();
+      const optsRaw = document.getElementById("newPollOptions").value
+        .split("\n")
+        .map(o => o.trim())
+        .filter(o => o.length > 0);
+
+      if (!qText || optsRaw.length < 2) {
+        alert("Lütfen soru ve en az 2 seçenek gir.");
+        return;
+      }
+
+      try {
+        // Bugünkü eski poll'ları bırakıyoruz, yenisi en üstte olacak
+        await addDoc(collection(db, "polls"), {
+          question: qText,
+          options: optsRaw,
+          date: todayISO(),
+          createdAt: serverTimestamp()
+        });
+        document.getElementById("newPollQuestion").value = "";
+        document.getElementById("newPollOptions").value = "";
+        await loadCurrentPoll();
+      } catch (err) {
+        console.error("Error creating poll:", err);
+        alert("Soru kaydedilemedi.");
+      }
+    }
+
+    // En son oluşturulan anketi yükle
+    async function loadCurrentPoll() {
+      pollQuestionTextEl.textContent = "Loading question...";
+      pollOptionsEl.innerHTML = "";
+
+      try {
+        const qPoll = query(
+          collection(db, "polls"),
+          orderBy("createdAt", "desc"),
+          limit(1)
+        );
+        const pollSnap = await getDocs(qPoll);
+
+        if (pollSnap.empty) {
+          currentPollId = null;
+          currentPollOptions = [];
+          pollQuestionTextEl.textContent = "No question yet.";
+          return;
+        }
+
+        // Tek doküman
+        const docPoll = pollSnap.docs[0];
+        const data = docPoll.data();
+        currentPollId = docPoll.id;
+        currentPollOptions = data.options || [];
+
+        pollQuestionTextEl.textContent = data.question || "Question";
+
+        // Şimdi bu anketin cevaplarını çek
+        const answersQ = query(
+          collection(db, "pollAnswers"),
+          where("pollId", "==", currentPollId)
+        );
+        const ansSnap = await getDocs(answersQ);
+
+        // Oy sayıları
+        const counts = new Array(currentPollOptions.length).fill(0);
+        ansSnap.forEach(ansDoc => {
+          const d = ansDoc.data();
+          const idx = d.optionIndex;
+          if (typeof idx === "number" && idx >= 0 && idx < counts.length) {
+            counts[idx]++;
+          }
+        });
+
+        // DOM'a yaz
+        pollOptionsEl.innerHTML = "";
+        currentPollOptions.forEach((opt, index) => {
+          const li = document.createElement("li");
+
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = "pollOption";
+          radio.value = String(index);
+
+          const label = document.createElement("span");
+          label.textContent = ` ${opt} — ${counts[index]} vote(s)`;
+
+          li.appendChild(radio);
+          li.appendChild(label);
+          pollOptionsEl.appendChild(li);
+        });
+
+        if (currentPollOptions.length === 0) {
+          pollOptionsEl.innerHTML = "<li>No options.</li>";
+        }
+      } catch (err) {
+        console.error("Error loading poll:", err);
+        pollQuestionTextEl.textContent = "Error loading question.";
+      }
+    }
+
+    function getSelectedOptionIndex() {
+      const radios = document.querySelectorAll('input[name="pollOption"]');
+      for (const r of radios) {
+        if (r.checked) return parseInt(r.value, 10);
+      }
+      return null;
+    }
+
+    async function voteAs(author) {
+      if (!currentPollId) {
+        alert("Henüz bir soru yok.");
+        return;
+      }
+      const idx = getSelectedOptionIndex();
+      if (idx === null) {
+        alert("Lütfen bir seçenek seç.");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "pollAnswers"), {
+          pollId: currentPollId,
+          optionIndex: idx,
+          voter: author,
+          createdAt: serverTimestamp()
+        });
+        await loadCurrentPoll();
+      } catch (err) {
+        console.error("Error voting:", err);
+        alert("Oyun kaydedilemedi.");
+      }
+    }
+
+    document.getElementById("createPollBtn").addEventListener("click", createPoll);
+    document.getElementById("voteAbdBtn").addEventListener("click", () => voteAs("Abdullah"));
+    document.getElementById("voteYuiBtn").addEventListener("click", () => voteAs("Yustiani"));
+
+    // ---------- Sayfa açılınca ----------
     loadMessages();
+    loadCurrentPoll();
   </script>
 
 </body>
