@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Abdullah & Yustiani Indah – Miss You Page</title>
-  <meta name="description" content="Abdullah and Yustiani Indah's special miss you bar, countdown and music page.">
+  <meta name="description" content="Abdullah and Yustiani Indah's special miss you page with Dhikr, Quran, Hadith and countdown.">
   <meta name="robots" content="index, follow">
   <style>
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #ff9a9e, #fecfef);
       text-align: center;
-      padding-top: 60px;
+      padding-top: 40px;
       color: #ffffff;
       margin: 0;
     }
@@ -23,13 +23,13 @@
       margin-top: 0;
     }
     .section {
-      margin-top: 30px;
+      margin-top: 25px;
     }
     /* Miss You Bar */
     #bar-container {
       width: 80%;
       max-width: 450px;
-      margin: 30px auto 10px auto;
+      margin: 20px auto 10px auto;
       background: rgba(255,255,255,0.3);
       border-radius: 25px;
       overflow: hidden;
@@ -47,7 +47,7 @@
       font-weight: bold;
     }
     .note {
-      margin-top: 12px;
+      margin-top: 8px;
       font-size: 16px;
       opacity: 0.95;
     }
@@ -70,23 +70,28 @@
       width: 90%;
       max-width: 520px;
       box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      text-align: left;
     }
     .card h3 {
       margin-top: 0;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      text-align: left;
     }
     input[type="file"],
     input[type="text"],
+    textarea,
     button {
       margin-top: 8px;
     }
-    input[type="text"] {
+    input[type="text"],
+    textarea {
       width: 100%;
       max-width: 480px;
       padding: 8px 10px;
       border-radius: 8px;
       border: none;
       outline: none;
+      resize: vertical;
     }
     button {
       padding: 8px 16px;
@@ -114,7 +119,6 @@
       list-style: none;
       padding-left: 0;
       margin-top: 10px;
-      text-align: left;
     }
     #playlist li {
       margin-bottom: 6px;
@@ -129,9 +133,19 @@
       opacity: 0.8;
       margin-top: 6px;
     }
+    .center-text {
+      text-align: center;
+    }
+    .arabic {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+    .highlight {
+      font-weight: bold;
+    }
     footer {
-      margin-top: 40px;
-      font-size: 14px;
+      margin-top: 30px;
+      font-size: 13px;
       opacity: 0.8;
       padding-bottom: 25px;
     }
@@ -140,7 +154,7 @@
 <body>
 
   <h1>Abdullah ❤️ Yustiani Indah</h1>
-  <h2>Our Miss You Bar</h2>
+  <h2>Our Miss You Page</h2>
 
   <!-- Miss You Bar -->
   <div id="bar-container">
@@ -148,19 +162,74 @@
   </div>
   <div class="percent" id="percentText">0%</div>
 
-  <div class="note">
+  <div class="note center-text">
     Today our miss-you level is this high. <br>
-    sayang miss 🥹
+    Bugün birbirimizi bu kadar çok özlüyoruz. 🥹
   </div>
 
   <!-- Countdown Section -->
-  <div class="section">
+  <div class="section center-text">
     <h2>Countdown to 20 December</h2>
     <div class="countdown-box" id="countdownText">
       Calculating days...
     </div>
     <div class="small">
       Planned day to see each other, in shaa Allah. ✨
+    </div>
+  </div>
+
+  <!-- DAILY WORSHIP AREA -->
+
+  <!-- Daily Dhikr -->
+  <div class="section">
+    <div class="card">
+      <h3>📿 Daily Dhikr / Günlük Zikir</h3>
+      <div id="zikrArabic" class="arabic"></div>
+      <div id="zikrTrans"></div>
+      <div id="zikrCount" class="small"></div>
+    </div>
+  </div>
+
+  <!-- Daily Ayah -->
+  <div class="section">
+    <div class="card">
+      <h3>📖 Daily Ayah / Günün Ayeti</h3>
+      <div id="ayahText"></div>
+      <div id="ayahRef" class="small"></div>
+    </div>
+  </div>
+
+  <!-- Daily Hadith -->
+  <div class="section">
+    <div class="card">
+      <h3>🌱 Daily Hadith / Günün Hadisi</h3>
+      <div id="hadithText"></div>
+      <div id="hadithRef" class="small"></div>
+    </div>
+  </div>
+
+  <!-- Daily Messages -->
+  <div class="section">
+    <div class="card">
+      <h3>💌 Today’s Messages / Bugünkü Mesajlarımız</h3>
+
+      <p class="highlight">Abdullah’s message (for Yustiani):</p>
+      <textarea id="msgAbdullah" rows="3" placeholder="Write your message here..."></textarea>
+      <button id="saveAbdullah">Save Abdullah’s message</button>
+      <div id="showAbdullah" class="small"></div>
+
+      <hr>
+
+      <p class="highlight">Yustiani’s message (for Abdullah):</p>
+      <textarea id="msgYui" rows="3" placeholder="Write your message here..."></textarea>
+      <button id="saveYui">Save Yustiani’s message</button>
+      <div id="showYui" class="small"></div>
+
+      <div class="small">
+        These messages are saved <span class="highlight">only on this device</span> (browser storage).  
+        Yani burada yazılanlar sadece bu telefonda / bilgisayarda kayıtlı olur.  
+        Eğer gerçekten paylaşmak isterseniz, metni kopyalayıp WhatsApp veya başka bir yerden göndermeniz gerekiyor. 💌
+      </div>
     </div>
   </div>
 
@@ -203,7 +272,7 @@
 
       <div class="small">
         This list is saved only in your browser (local storage).  
-        Yani burada eklediğin şarkıları kendi cihazında görürsün.  
+        Burada eklediğin şarkıları kendi cihazında görürsün.  
         Yui ile paylaşmak istersen linkleri ona mesajla göndermen gerekiyor. 💌
       </div>
     </div>
@@ -214,7 +283,6 @@
     <div class="card">
       <h3>🌙 Suggested song from this page</h3>
       <p>Today our page suggests this song for us:</p>
-      <!-- Buraya sevdiğin başka bir şarkıyı da koyabilirsin -->
       <p>
         <a href="https://open.spotify.com/track/3KkXRkHbMCARz0aVfEt68P" target="_blank" rel="noopener noreferrer">
           “Perfect” – Ed Sheeran (Spotify)
@@ -232,8 +300,7 @@
 
 <script>
   // ---------- Miss You Bar ----------
-  // Buradaki sayıyı (0-100) değiştirerek özleme seviyesini güncelleyebilirsin.
-  let target = 92;
+  let target = 92; // 0-100 arası özleme seviyesi
   let value = 0;
 
   function animateBar() {
@@ -250,7 +317,6 @@
 
   // ---------- Countdown to 20 December ----------
   function updateCountdown() {
-    // Tarihi istersen buradan değiştir: Yıl-Ay-Gün
     const targetDate = new Date("2025-12-20T00:00:00");
     const now = new Date();
     const diff = targetDate - now;
@@ -266,6 +332,107 @@
     el.textContent = days + " days left until 20 December.";
   }
 
+  // ---------- Helper: day-of-year index ----------
+  function dayIndex(listLength) {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today - start;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const day = Math.floor(diff / oneDay); // 1..365
+    return day % listLength;
+  }
+
+  // ---------- Daily Dhikr ----------
+  const zikrList = [
+    {
+      arabic: "Subhānallāh",
+      trans: "Subhanallah – Allah’ı eksikliklerden tenzih ederim.",
+      count: "33x (after prayer / namazdan sonra)"
+    },
+    {
+      arabic: "Alhamdulillāh",
+      trans: "Elhamdülillah – Hamd Allah’adır.",
+      count: "33x"
+    },
+    {
+      arabic: "Allāhu akbar",
+      trans: "Allahu Ekber – Allah en büyüktür.",
+      count: "34x"
+    },
+    {
+      arabic: "Astaghfirullāh",
+      trans: "Estağfirullah – Allah’tan bağışlanma dilerim.",
+      count: "100x"
+    },
+    {
+      arabic: "Lā ilāha illā Allāh",
+      trans: "La ilahe illallah – Allah’tan başka ilah yoktur.",
+      count: "100x (throughout the day / gün içinde)"
+    }
+  ];
+
+  function setDailyZikr() {
+    const i = dayIndex(zikrList.length);
+    const z = zikrList[i];
+    document.getElementById("zikrArabic").textContent = z.arabic;
+    document.getElementById("zikrTrans").textContent = z.trans;
+    document.getElementById("zikrCount").textContent = "Suggestion: " + z.count;
+  }
+
+  // ---------- Daily Ayah ----------
+  const ayahList = [
+    {
+      text: "“Truly, in the remembrance of Allah do hearts find rest.”",
+      ref: "Qur’an, ar-Raʿd 13:28 (approx. meaning)"
+    },
+    {
+      text: "“And He it is who created for you hearing, sight and hearts.”",
+      ref: "Qur’an, al-Mu’minun 23:78 (approx. meaning)"
+    },
+    {
+      text: "“Indeed, with hardship comes ease.”",
+      ref: "Qur’an, ash-Sharh 94:6"
+    },
+    {
+      text: "“He loves those who rely upon Him.”",
+      ref: "Qur’an, Al ʿImran 3:159 (approx. meaning)"
+    }
+  ];
+
+  function setDailyAyah() {
+    const i = dayIndex(ayahList.length);
+    const a = ayahList[i];
+    document.getElementById("ayahText").textContent = a.text;
+    document.getElementById("ayahRef").textContent = a.ref;
+  }
+
+  // ---------- Daily Hadith (short paraphrases) ----------
+  const hadithList = [
+    {
+      text: "The most beloved deeds to Allah are those that are done regularly, even if they are small.",
+      ref: "Reported in Bukhari & Muslim (approx. wording)."
+    },
+    {
+      text: "A believer is to another believer like a building whose different parts support each other.",
+      ref: "Reported in Bukhari & Muslim (approx. wording)."
+    },
+    {
+      text: "The best among you are those who are best to their families.",
+      ref: "Reported in Tirmidhi (approx. wording)."
+    },
+    {
+      text: "Smiling at your brother/sister is an act of charity.",
+      ref: "Reported in Tirmidhi (approx. wording)."
+    }
+  ];
+
+  function setDailyHadith() {
+    const i = dayIndex(hadithList.length);
+    const h = hadithList[i];
+    document.getElementById("hadithText").textContent = h.text;
+    document.getElementById("hadithRef").textContent = h.ref;
+  }
+
   // ---------- Image Preview ----------
   const imageInput = document.getElementById("imageInput");
   const previewImage = document.getElementById("previewImage");
@@ -273,7 +440,6 @@
   imageInput.addEventListener("change", function () {
     const file = this.files[0];
     if (!file) return;
-
     const url = URL.createObjectURL(file);
     previewImage.src = url;
     previewImage.style.display = "block";
@@ -286,13 +452,12 @@
   audioInput.addEventListener("change", function () {
     const file = this.files[0];
     if (!file) return;
-
     const url = URL.createObjectURL(file);
     audioPlayer.src = url;
     audioPlayer.style.display = "block";
   });
 
-  // ---------- Playlist (links) ----------
+  // ---------- Playlist (links, local only) ----------
   const songInput = document.getElementById("songInput");
   const addSongBtn = document.getElementById("addSongBtn");
   const playlistEl = document.getElementById("playlist");
@@ -335,13 +500,24 @@
     songInput.value = "";
   });
 
-  // Başlangıçta çalıştır
-  animateBar();
-  updateCountdown();
-  loadPlaylist();
-  // Gerekirse arada bir countdown güncelle
-  setInterval(updateCountdown, 60 * 60 * 1000);
-</script>
+  // ---------- Daily Messages (local only) ----------
+  function todayKey(suffix) {
+    const d = new Date();
+    const dayStr = d.toISOString().slice(0, 10); // YYYY-MM-DD
+    return "msg_" + suffix + "_" + dayStr;
+  }
 
-</body>
-</html>
+  const msgAbd = document.getElementById("msgAbdullah");
+  const msgYui = document.getElementById("msgYui");
+  const saveAbd = document.getElementById("saveAbdullah");
+  const saveYui = document.getElementById("saveYui");
+  const showAbd = document.getElementById("showAbdullah");
+  const showYui = document.getElementById("showYui");
+
+  function loadTodayMessages() {
+    const abdText = localStorage.getItem(todayKey("abdullah"));
+    const yuiText = localStorage.getItem(todayKey("yui"));
+
+    if (abdText) {
+      msgAbd.value = abdText;
+      showAbd.textC
