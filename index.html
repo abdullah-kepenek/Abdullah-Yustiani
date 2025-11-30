@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Fatih & Yui – Missing Bar</title>
+  <meta name="description" content="Fatih ve Yui'nin özel özleme barı.">
+  <meta name="robots" content="index, follow">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ffc0cb, #ff9a9e);
+      text-align: center;
+      padding-top: 120px;
+      color: white;
+    }
+    h1 {
+      font-size: 50px;
+    }
+    #bar-container {
+      width: 80%;
+      max-width: 400px;
+      margin: 40px auto;
+      background: rgba(255,255,255,0.3);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    #bar {
+      height: 40px;
+      width: 0%;
+      background: #ff0055;
+      transition: width 2s;
+    }
+    .percent {
+      margin-top: 20px;
+      font-size: 30px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Abdullah ❤️ Yui</h1>
+  <h2>Özleme Barımız</h2>
+
+  <div id="bar-container">
+    <div id="bar"></div>
+  </div>
+
+  <div class="percent" id="percentText">0%</div>
+
+<script>
+  let value = 0;
+  let target = 92; // Burayı istediğin değere göre değiştir
+
+  function animateBar() {
+    let interval = setInterval(() => {
+      if (value >= target) {
+        clearInterval(interval);
+      } else {
+        value++;
+        document.getElementById("bar").style.width = value + "%";
+        document.getElementById("percentText").textContent = value + "%";
+      }
+    }, 30);
+  }
+
+  animateBar();
+</script>
+
+</body>
+</html>
