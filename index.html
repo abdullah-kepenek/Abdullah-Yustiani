@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Abdullah & Yustiyani – Miss You Bar</title>
-  <meta name="description" content="Abdullah and Yustiyani's special miss you bar and countdown.">
+  <title>Abdullah & Yustiani Indah – Miss You Page</title>
+  <meta name="description" content="Abdullah and Yustiani Indah's special miss you bar, countdown and music page.">
   <meta name="robots" content="index, follow">
   <style>
     body {
@@ -61,22 +61,42 @@
       padding: 10px 20px;
       border-radius: 20px;
     }
-    /* Upload areas */
+    /* Cards */
     .card {
       background: rgba(255,255,255,0.2);
       margin: 15px auto;
       padding: 15px 20px;
       border-radius: 20px;
       width: 90%;
-      max-width: 500px;
+      max-width: 520px;
       box-shadow: 0 6px 16px rgba(0,0,0,0.2);
     }
     .card h3 {
       margin-top: 0;
       margin-bottom: 10px;
     }
-    input[type="file"] {
-      margin-top: 10px;
+    input[type="file"],
+    input[type="text"],
+    button {
+      margin-top: 8px;
+    }
+    input[type="text"] {
+      width: 100%;
+      max-width: 480px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+    button {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      opacity: 0.9;
     }
     #previewImage {
       margin-top: 15px;
@@ -90,6 +110,25 @@
       width: 100%;
       display: none;
     }
+    #playlist {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 10px;
+      text-align: left;
+    }
+    #playlist li {
+      margin-bottom: 6px;
+      font-size: 14px;
+      word-break: break-all;
+    }
+    #playlist a {
+      color: #ffe6ff;
+    }
+    .small {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 6px;
+    }
     footer {
       margin-top: 40px;
       font-size: 14px;
@@ -100,7 +139,7 @@
 </head>
 <body>
 
-  <h1>Abdullah ❤️ Yustiyani</h1>
+  <h1>Abdullah ❤️ Yustiani Indah</h1>
   <h2>Our Miss You Bar</h2>
 
   <!-- Miss You Bar -->
@@ -111,7 +150,7 @@
 
   <div class="note">
     Today our miss-you level is this high. <br>
-    Bugün birbirimizi bu kadar çok özlüyoruz. 🥹
+    sayang miss 🥹
   </div>
 
   <!-- Countdown Section -->
@@ -120,30 +159,75 @@
     <div class="countdown-box" id="countdownText">
       Calculating days...
     </div>
+    <div class="small">
+      Planned day to see each other, in shaa Allah. ✨
+    </div>
   </div>
 
   <!-- Image Upload Section -->
   <div class="section">
     <div class="card">
       <h3>📸 Our special picture</h3>
-      <p>Select a picture from your device. It will only be visible here.</p>
+      <p>Select a picture from your device. It will only be visible on this device.</p>
       <input type="file" id="imageInput" accept="image/*">
       <img id="previewImage" alt="Preview">
+      <div class="small">
+        This photo is not uploaded to any server. It stays only on your phone/computer.
+      </div>
     </div>
   </div>
 
   <!-- Music Upload Section -->
   <div class="section">
     <div class="card">
-      <h3>🎵 Our song</h3>
+      <h3>🎵 Our song (from your device)</h3>
       <p>Select a music file from your device and press play.</p>
       <input type="file" id="audioInput" accept="audio/*">
       <audio id="audioPlayer" controls></audio>
+      <div class="small">
+        This music file also stays only on your device.
+      </div>
+    </div>
+  </div>
+
+  <!-- Playlist (YouTube / Spotify links) -->
+  <div class="section">
+    <div class="card">
+      <h3>💿 Our shared playlist (links)</h3>
+      <p>Paste a YouTube or Spotify link and add it to the list.</p>
+      <input type="text" id="songInput" placeholder="Paste YouTube or Spotify link here">
+      <br>
+      <button id="addSongBtn">Add to list</button>
+
+      <ul id="playlist"></ul>
+
+      <div class="small">
+        This list is saved only in your browser (local storage).  
+        Yani burada eklediğin şarkıları kendi cihazında görürsün.  
+        Yui ile paylaşmak istersen linkleri ona mesajla göndermen gerekiyor. 💌
+      </div>
+    </div>
+  </div>
+
+  <!-- Suggested song -->
+  <div class="section">
+    <div class="card">
+      <h3>🌙 Suggested song from this page</h3>
+      <p>Today our page suggests this song for us:</p>
+      <!-- Buraya sevdiğin başka bir şarkıyı da koyabilirsin -->
+      <p>
+        <a href="https://open.spotify.com/track/3KkXRkHbMCARz0aVfEt68P" target="_blank" rel="noopener noreferrer">
+          “Perfect” – Ed Sheeran (Spotify)
+        </a>
+      </p>
+      <p class="small">
+        You can change this link in the code later if you want another song.
+      </p>
     </div>
   </div>
 
   <footer>
-    Made with a lot of ❤ by Abdullah for Yustiyani.
+    Made with a lot of ❤ by Abdullah for Yustiani Indah.
   </footer>
 
 <script>
@@ -206,14 +290,56 @@
     const url = URL.createObjectURL(file);
     audioPlayer.src = url;
     audioPlayer.style.display = "block";
-    // İstersen otomatik başlat:
-    // audioPlayer.play();
+  });
+
+  // ---------- Playlist (links) ----------
+  const songInput = document.getElementById("songInput");
+  const addSongBtn = document.getElementById("addSongBtn");
+  const playlistEl = document.getElementById("playlist");
+
+  function loadPlaylist() {
+    const data = localStorage.getItem("abdullah_yustiani_playlist");
+    if (!data) return;
+    try {
+      const list = JSON.parse(data);
+      list.forEach(url => addSongToDOM(url));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function savePlaylist() {
+    const items = [];
+    playlistEl.querySelectorAll("a").forEach(a => {
+      items.push(a.href);
+    });
+    localStorage.setItem("abdullah_yustiani_playlist", JSON.stringify(items));
+  }
+
+  function addSongToDOM(url) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = url;
+    li.appendChild(a);
+    playlistEl.appendChild(li);
+  }
+
+  addSongBtn.addEventListener("click", () => {
+    const url = songInput.value.trim();
+    if (!url) return;
+    addSongToDOM(url);
+    savePlaylist();
+    songInput.value = "";
   });
 
   // Başlangıçta çalıştır
   animateBar();
   updateCountdown();
-  // Gerekirse her güncellenmesi için (günde bir kere yeterli)
+  loadPlaylist();
+  // Gerekirse arada bir countdown güncelle
   setInterval(updateCountdown, 60 * 60 * 1000);
 </script>
 
