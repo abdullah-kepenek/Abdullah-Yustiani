@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Abdullah & Yustiani Indah – Miss You Page</title>
-  <meta name="description" content="Abdullah and Yustiani Indah's special miss you page with shared messages and polls.">
+  <meta name="description" content="Abdullah and Yustiani Indah's special miss you page with shared messages and question cards.">
   <meta name="robots" content="index, follow">
 
   <style>
@@ -130,36 +130,82 @@
     #messageList .author {
       font-weight: bold;
     }
-    /* Poll styles */
-    #pollOptions {
-      list-style: none;
-      padding-left: 0;
-      margin-top: 10px;
-    }
-    #pollOptions li {
-      margin-bottom: 6px;
-      font-size: 14px;
-      background: rgba(0,0,0,0.1);
-      padding: 6px 10px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    #pollQuestionText {
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
     .small {
       font-size: 12px;
       opacity: 0.8;
       margin-top: 6px;
     }
-    footer {
-      margin-top: 30px;
+
+    /* Question cards */
+    .qa-type-toggle {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    .qa-type-toggle label {
+      font-weight: normal;
+      cursor: pointer;
+    }
+    #choiceOptionsContainer {
+      margin-top: 8px;
+    }
+    .choice-option-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .choice-option-row input[type="text"] {
+      flex: 1;
+      margin-top: 0;
+    }
+    .choice-option-row span {
       font-size: 13px;
       opacity: 0.8;
-      padding-bottom: 25px;
+    }
+    .qa-list {
+      margin-top: 16px;
+    }
+    .qa-card {
+      background: rgba(0,0,0,0.08);
+      padding: 10px 12px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+    }
+    .qa-question {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .qa-meta {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-bottom: 8px;
+    }
+    .qa-options {
+      margin-bottom: 8px;
+    }
+    .qa-options label {
+      font-weight: normal;
+      font-size: 14px;
+    }
+    .qa-answer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+    .qa-answers-list {
+      font-size: 13px;
+      background: rgba(0,0,0,0.05);
+      padding: 6px 8px;
+      border-radius: 10px;
+      margin-top: 4px;
+    }
+    .qa-answers-list div {
+      margin-bottom: 2px;
     }
   </style>
 </head>
@@ -218,34 +264,44 @@
     </div>
   </div>
 
-  <!-- Poll card -->
+  <!-- Question / Poll cards -->
   <div class="section">
     <div class="card">
-      <h3>🎯 Today’s Question / Poll</h3>
+      <h3>🎯 Question Cards</h3>
 
       <p><strong>Create a new question (Abdullah):</strong></p>
-      <label for="newPollQuestion">Question:</label>
-      <textarea id="newPollQuestion" placeholder="Example: Which surah should we read together tonight?"></textarea>
 
-      <label for="newPollOptions">Options (one per line):</label>
-      <textarea id="newPollOptions" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+      <label for="newQuestionText">Question:</label>
+      <textarea id="newQuestionText" placeholder="Example: What was the best moment of your day?"></textarea>
 
-      <button id="createPollBtn">Create / Update today’s question</button>
+      <div class="qa-type-toggle">
+        <label>
+          <input type="radio" name="qType" id="qTypeChoice" checked>
+          Multiple choice (options)
+        </label>
+        <label>
+          <input type="radio" name="qType" id="qTypeText">
+          Free text answer
+        </label>
+      </div>
+
+      <div id="choiceOptionsContainer">
+        <!-- option inputs buraya gelecek -->
+      </div>
+
+      <button id="addOptionBtn">+ Add option</button>
+      <button id="createQuestionBtn">Create question</button>
+
+      <p class="small">
+        You can create many questions. Yui ne zaman isterse girip cevap verebilir.  
+        Şıklı sorularda şık seçer, serbest sorularda cevabını yazar ve altında hepsi görünür.
+      </p>
 
       <hr>
 
-      <p><strong>Current question:</strong></p>
-      <div id="pollArea">
-        <div id="pollQuestionText">No question yet.</div>
-        <ul id="pollOptions"></ul>
-
-        <button id="voteAbdBtn">Vote as Abdullah</button>
-        <button id="voteYuiBtn">Vote as Yustiani</button>
-
-        <p class="small">
-          You can select one option and then vote as Abdullah or Yustiani.  
-          Oylamalar Firestore’da saklanır, ikiniz de sonucu görebilirsiniz.
-        </p>
+      <h3>📌 Latest questions & answers</h3>
+      <div id="qaList" class="qa-list">
+        Loading questions...
       </div>
     </div>
   </div>
@@ -256,7 +312,7 @@
 
   <!-- FIREBASE + APP LOGIC -->
   <script type="module">
-    // 1) Firebase SDK'ları (CDN)
+    // 1) Firebase SDK'ları
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
       getFirestore,
@@ -270,7 +326,7 @@
       limit
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // 2) Senin Firebase config'in
+    // 2) Firebase config (senin projen)
     const firebaseConfig = {
       apiKey: "AIzaSyB-9cGEGIDxdRSbCmKLyNNB3c1pTeCXzIw",
       authDomain: "abdullah-yustiani-page.firebaseapp.com",
@@ -280,7 +336,6 @@
       appId: "1:617857114066:web:ec215e004c94fbd3c4720b"
     };
 
-    // 3) Firebase başlat
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -317,7 +372,7 @@
     }
     updateCountdown();
 
-    // ---------- Firestore: mesajlar ----------
+    // ---------- Messages ----------
     async function sendMessage(author, text) {
       if (!text) return;
       try {
@@ -339,12 +394,12 @@
       listEl.innerHTML = "<li>Loading...</li>";
 
       try {
-        const q = query(
+        const qMsg = query(
           collection(db, "messages"),
           where("date", "==", todayISO()),
           orderBy("createdAt", "asc")
         );
-        const snap = await getDocs(q);
+        const snap = await getDocs(qMsg);
 
         listEl.innerHTML = "";
         if (snap.empty) {
@@ -382,155 +437,281 @@
       sendMessage("Yustiani", text);
     });
 
-    // ---------- Poll (soru kartı) ----------
-    let currentPollId = null;
-    let currentPollOptions = [];
+    // ---------- Question cards ----------
 
-    const pollQuestionTextEl = document.getElementById("pollQuestionText");
-    const pollOptionsEl = document.getElementById("pollOptions");
+    const choiceOptionsContainer = document.getElementById("choiceOptionsContainer");
+    const qTypeChoice = document.getElementById("qTypeChoice");
+    const qTypeText = document.getElementById("qTypeText");
+    const addOptionBtn = document.getElementById("addOptionBtn");
+    const createQuestionBtn = document.getElementById("createQuestionBtn");
+    const qaListEl = document.getElementById("qaList");
 
-    // Yeni anket oluştur (Abdullah tarafı)
-    async function createPoll() {
-      const qText = document.getElementById("newPollQuestion").value.trim();
-      const optsRaw = document.getElementById("newPollOptions").value
-        .split("\n")
-        .map(o => o.trim())
-        .filter(o => o.length > 0);
+    function createOptionRow(labelText = "") {
+      const row = document.createElement("div");
+      row.className = "choice-option-row";
 
-      if (!qText || optsRaw.length < 2) {
-        alert("Lütfen soru ve en az 2 seçenek gir.");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "Option text";
+      input.value = labelText;
+
+      const span = document.createElement("span");
+      span.textContent = "choice";
+
+      row.appendChild(input);
+      row.appendChild(span);
+      choiceOptionsContainer.appendChild(row);
+    }
+
+    function initDefaultOptions() {
+      choiceOptionsContainer.innerHTML = "";
+      createOptionRow("Yes");
+      createOptionRow("No");
+    }
+
+    function refreshChoiceVisibility() {
+      if (qTypeChoice.checked) {
+        choiceOptionsContainer.style.display = "block";
+        addOptionBtn.style.display = "inline-block";
+      } else {
+        choiceOptionsContainer.style.display = "none";
+        addOptionBtn.style.display = "none";
+      }
+    }
+
+    qTypeChoice.addEventListener("change", refreshChoiceVisibility);
+    qTypeText.addEventListener("change", refreshChoiceVisibility);
+
+    addOptionBtn.addEventListener("click", () => {
+      createOptionRow("");
+    });
+
+    async function createQuestion() {
+      const questionText = document.getElementById("newQuestionText").value.trim();
+      if (!questionText) {
+        alert("Lütfen soru yaz.");
         return;
       }
 
+      let type = "choice";
+      let options = [];
+
+      if (qTypeText.checked) {
+        type = "text";
+      } else {
+        const inputs = choiceOptionsContainer.querySelectorAll("input[type='text']");
+        inputs.forEach(inp => {
+          const val = inp.value.trim();
+          if (val) options.push(val);
+        });
+        if (options.length < 2) {
+          alert("Multiple choice için en az 2 seçenek olmalı.");
+          return;
+        }
+      }
+
       try {
-        // Bugünkü eski poll'ları bırakıyoruz, yenisi en üstte olacak
-        await addDoc(collection(db, "polls"), {
-          question: qText,
-          options: optsRaw,
-          date: todayISO(),
+        await addDoc(collection(db, "qaQuestions"), {
+          question: questionText,
+          type,
+          options,
           createdAt: serverTimestamp()
         });
-        document.getElementById("newPollQuestion").value = "";
-        document.getElementById("newPollOptions").value = "";
-        await loadCurrentPoll();
+        document.getElementById("newQuestionText").value = "";
+        if (type === "choice") initDefaultOptions();
+        await loadQuestions();
       } catch (err) {
-        console.error("Error creating poll:", err);
+        console.error("Error creating question:", err);
         alert("Soru kaydedilemedi.");
       }
     }
 
-    // En son oluşturulan anketi yükle
-    async function loadCurrentPoll() {
-      pollQuestionTextEl.textContent = "Loading question...";
-      pollOptionsEl.innerHTML = "";
+    createQuestionBtn.addEventListener("click", createQuestion);
+
+    async function loadQuestions() {
+      qaListEl.textContent = "Loading questions...";
 
       try {
-        const qPoll = query(
-          collection(db, "polls"),
+        const qQuestions = query(
+          collection(db, "qaQuestions"),
           orderBy("createdAt", "desc"),
-          limit(1)
+          limit(10)
         );
-        const pollSnap = await getDocs(qPoll);
+        const qSnap = await getDocs(qQuestions);
 
-        if (pollSnap.empty) {
-          currentPollId = null;
-          currentPollOptions = [];
-          pollQuestionTextEl.textContent = "No question yet.";
+        if (qSnap.empty) {
+          qaListEl.textContent = "No questions yet.";
           return;
         }
 
-        // Tek doküman
-        const docPoll = pollSnap.docs[0];
-        const data = docPoll.data();
-        currentPollId = docPoll.id;
-        currentPollOptions = data.options || [];
+        qaListEl.innerHTML = "";
 
-        pollQuestionTextEl.textContent = data.question || "Question";
+        // Her soru için ayrı kart
+        for (const docSnap of qSnap.docs) {
+          const qData = docSnap.data();
+          const qId = docSnap.id;
+          const qText = qData.question || "";
+          const qType = qData.type || "choice";
+          const qOptions = qData.options || [];
 
-        // Şimdi bu anketin cevaplarını çek
-        const answersQ = query(
-          collection(db, "pollAnswers"),
-          where("pollId", "==", currentPollId)
-        );
-        const ansSnap = await getDocs(answersQ);
+          const card = document.createElement("div");
+          card.className = "qa-card";
 
-        // Oy sayıları
-        const counts = new Array(currentPollOptions.length).fill(0);
-        ansSnap.forEach(ansDoc => {
-          const d = ansDoc.data();
-          const idx = d.optionIndex;
-          if (typeof idx === "number" && idx >= 0 && idx < counts.length) {
-            counts[idx]++;
+          const qEl = document.createElement("div");
+          qEl.className = "qa-question";
+          qEl.textContent = qText;
+
+          const meta = document.createElement("div");
+          meta.className = "qa-meta";
+          meta.textContent =
+            qType === "choice"
+              ? "Type: Multiple choice"
+              : "Type: Free text answer";
+
+          card.appendChild(qEl);
+          card.appendChild(meta);
+
+          const answerArea = document.createElement("div");
+          answerArea.className = "qa-answer-area";
+
+          let answerInputElement = null;
+          let radioName = null;
+
+          if (qType === "choice") {
+            const optionsDiv = document.createElement("div");
+            optionsDiv.className = "qa-options";
+
+            radioName = "qaopt_" + qId;
+
+            qOptions.forEach((opt, idx) => {
+              const line = document.createElement("div");
+              const radio = document.createElement("input");
+              radio.type = "radio";
+              radio.name = radioName;
+              radio.value = String(idx);
+
+              const label = document.createElement("label");
+              label.textContent = " " + opt;
+
+              line.appendChild(radio);
+              line.appendChild(label);
+              optionsDiv.appendChild(line);
+            });
+
+            answerArea.appendChild(optionsDiv);
+          } else {
+            const ta = document.createElement("textarea");
+            ta.rows = 2;
+            ta.placeholder = "Write your answer here...";
+            answerInputElement = ta;
+            answerArea.appendChild(ta);
           }
-        });
 
-        // DOM'a yaz
-        pollOptionsEl.innerHTML = "";
-        currentPollOptions.forEach((opt, index) => {
-          const li = document.createElement("li");
+          const actions = document.createElement("div");
+          actions.className = "qa-answer-actions";
 
-          const radio = document.createElement("input");
-          radio.type = "radio";
-          radio.name = "pollOption";
-          radio.value = String(index);
+          const btnAbd = document.createElement("button");
+          btnAbd.textContent = "Answer as Abdullah";
 
-          const label = document.createElement("span");
-          label.textContent = ` ${opt} — ${counts[index]} vote(s)`;
+          const btnYui = document.createElement("button");
+          btnYui.textContent = "Answer as Yustiani";
 
-          li.appendChild(radio);
-          li.appendChild(label);
-          pollOptionsEl.appendChild(li);
-        });
+          async function handleAnswer(author) {
+            let payload = {
+              questionId: qId,
+              author,
+              type: qType,
+              createdAt: serverTimestamp()
+            };
 
-        if (currentPollOptions.length === 0) {
-          pollOptionsEl.innerHTML = "<li>No options.</li>";
+            if (qType === "choice") {
+              const selected = card.querySelector(
+                `input[name="${radioName}"]:checked`
+              );
+              if (!selected) {
+                alert("Lütfen bir seçenek seç.");
+                return;
+              }
+              payload.optionIndex = parseInt(selected.value, 10);
+            } else {
+              const txt = answerInputElement.value.trim();
+              if (!txt) {
+                alert("Lütfen bir cevap yaz.");
+                return;
+              }
+              payload.textAnswer = txt;
+              answerInputElement.value = "";
+            }
+
+            try {
+              await addDoc(collection(db, "qaAnswers"), payload);
+              await loadQuestions(); // tekrar yükle, cevaplar güncellensin
+            } catch (err) {
+              console.error("Error sending answer:", err);
+              alert("Cevap kaydedilemedi.");
+            }
+          }
+
+          btnAbd.addEventListener("click", () => handleAnswer("Abdullah"));
+          btnYui.addEventListener("click", () => handleAnswer("Yustiani"));
+
+          actions.appendChild(btnAbd);
+          actions.appendChild(btnYui);
+          answerArea.appendChild(actions);
+
+          card.appendChild(answerArea);
+
+          // Cevaplar listesi
+          const answersBox = document.createElement("div");
+          answersBox.className = "qa-answers-list";
+          answersBox.textContent = "Loading answers...";
+          card.appendChild(answersBox);
+
+          qaListEl.appendChild(card);
+
+          // Bu soru için cevapları çek
+          const aQuery = query(
+            collection(db, "qaAnswers"),
+            where("questionId", "==", qId),
+            orderBy("createdAt", "asc")
+          );
+          const aSnap = await getDocs(aQuery);
+
+          if (aSnap.empty) {
+            answersBox.textContent = "No answers yet.";
+          } else {
+            answersBox.innerHTML = "";
+            aSnap.forEach(ansDoc => {
+              const aData = ansDoc.data();
+              const line = document.createElement("div");
+              let answerText = "";
+
+              if (qType === "choice") {
+                const idx = aData.optionIndex;
+                const label = (typeof idx === "number" && qOptions[idx])
+                  ? qOptions[idx]
+                  : "(option)";
+                answerText = label;
+              } else {
+                answerText = aData.textAnswer || "";
+              }
+
+              line.textContent = (aData.author || "Unknown") + ": " + answerText;
+              answersBox.appendChild(line);
+            });
+          }
         }
       } catch (err) {
-        console.error("Error loading poll:", err);
-        pollQuestionTextEl.textContent = "Error loading question.";
+        console.error("Error loading questions:", err);
+        qaListEl.textContent = "Error loading questions.";
       }
     }
 
-    function getSelectedOptionIndex() {
-      const radios = document.querySelectorAll('input[name="pollOption"]');
-      for (const r of radios) {
-        if (r.checked) return parseInt(r.value, 10);
-      }
-      return null;
-    }
-
-    async function voteAs(author) {
-      if (!currentPollId) {
-        alert("Henüz bir soru yok.");
-        return;
-      }
-      const idx = getSelectedOptionIndex();
-      if (idx === null) {
-        alert("Lütfen bir seçenek seç.");
-        return;
-      }
-
-      try {
-        await addDoc(collection(db, "pollAnswers"), {
-          pollId: currentPollId,
-          optionIndex: idx,
-          voter: author,
-          createdAt: serverTimestamp()
-        });
-        await loadCurrentPoll();
-      } catch (err) {
-        console.error("Error voting:", err);
-        alert("Oyun kaydedilemedi.");
-      }
-    }
-
-    document.getElementById("createPollBtn").addEventListener("click", createPoll);
-    document.getElementById("voteAbdBtn").addEventListener("click", () => voteAs("Abdullah"));
-    document.getElementById("voteYuiBtn").addEventListener("click", () => voteAs("Yustiani"));
-
-    // ---------- Sayfa açılınca ----------
+    // ---------- Init ----------
+    initDefaultOptions();
+    refreshChoiceVisibility();
     loadMessages();
-    loadCurrentPoll();
+    loadQuestions();
   </script>
 
 </body>
