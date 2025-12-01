@@ -321,8 +321,8 @@
       getDocs,
       query,
       where,
-      orderBy,
       serverTimestamp,
+      orderBy,
       limit
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -383,11 +383,10 @@
           createdAt: serverTimestamp()
         });
         await loadMessages();
-     } catch (err) {
+      } catch (err) {
         console.error("Error sending message:", err);
-        alert("Message could not be sent: " + err.message);
+        alert("Message could not be sent: " + (err.message || ""));
       }
-
     }
 
     async function loadMessages() {
@@ -395,10 +394,10 @@
       listEl.innerHTML = "<li>Loading...</li>";
 
       try {
+        // SADECE where kullanıyoruz, orderBy yok (index ihtiyacı yok)
         const qMsg = query(
           collection(db, "messages"),
-          where("date", "==", todayISO()),
-          orderBy("createdAt", "asc")
+          where("date", "==", todayISO())
         );
         const snap = await getDocs(qMsg);
 
@@ -408,7 +407,17 @@
           return;
         }
 
-        snap.forEach(docSnap => {
+        // Belgeleri topla ve createdAt'e göre JS tarafında sırala
+        const docs = [];
+        snap.forEach(docSnap => docs.push(docSnap));
+
+        docs.sort((a, b) => {
+          const da = a.data().createdAt?.toMillis?.() || 0;
+          const dbb = b.data().createdAt?.toMillis?.() || 0;
+          return da - dbb;
+        });
+
+        docs.forEach(docSnap => {
           const data = docSnap.data();
           const li = document.createElement("li");
           const authorSpan = document.createElement("span");
@@ -422,7 +431,7 @@
         });
       } catch (err) {
         console.error("Error loading messages:", err);
-        listEl.innerHTML = "<li>Error loading messages.</li>";
+        listEl.innerHTML = "<li>Error loading messages: " + (err.message || "") + "</li>";
       }
     }
 
@@ -523,9 +532,8 @@
         await loadQuestions();
       } catch (err) {
         console.error("Error creating question:", err);
-        alert("Soru kaydedilemedi: " + err.message);
+        alert("Soru kaydedilemedi: " + (err.message || ""));
       }
-
     }
 
     createQuestionBtn.addEventListener("click", createQuestion);
@@ -650,7 +658,7 @@
               await loadQuestions(); // tekrar yükle, cevaplar güncellensin
             } catch (err) {
               console.error("Error sending answer:", err);
-              alert("Cevap kaydedilemedi.");
+              alert("Cevap kaydedilemedi: " + (err.message || ""));
             }
           }
 
@@ -671,41 +679,54 @@
 
           qaListEl.appendChild(card);
 
-          // Bu soru için cevapları çek
-          const aQuery = query(
-            collection(db, "qaAnswers"),
-            where("questionId", "==", qId),
-            orderBy("createdAt", "asc")
-          );
-          const aSnap = await getDocs(aQuery);
+          // Bu soru için cevapları çek (sadece where, orderBy yok; JS'de sıralayacağız)
+          try {
+            const aQuery = query(
+              collection(db, "qaAnswers"),
+              where("questionId", "==", qId)
+            );
+            const aSnap = await getDocs(aQuery);
 
-          if (aSnap.empty) {
-            answersBox.textContent = "No answers yet.";
-          } else {
-            answersBox.innerHTML = "";
-            aSnap.forEach(ansDoc => {
-              const aData = ansDoc.data();
-              const line = document.createElement("div");
-              let answerText = "";
+            if (aSnap.empty) {
+              answersBox.textContent = "No answers yet.";
+            } else {
+              const ansDocs = [];
+              aSnap.forEach(d => ansDocs.push(d));
 
-              if (qType === "choice") {
-                const idx = aData.optionIndex;
-                const label = (typeof idx === "number" && qOptions[idx])
-                  ? qOptions[idx]
-                  : "(option)";
-                answerText = label;
-              } else {
-                answerText = aData.textAnswer || "";
-              }
+              ansDocs.sort((a, b) => {
+                const ta = a.data().createdAt?.toMillis?.() || 0;
+                const tb = b.data().createdAt?.toMillis?.() || 0;
+                return ta - tb;
+              });
 
-              line.textContent = (aData.author || "Unknown") + ": " + answerText;
-              answersBox.appendChild(line);
-            });
+              answersBox.innerHTML = "";
+              ansDocs.forEach(ansDoc => {
+                const aData = ansDoc.data();
+                const line = document.createElement("div");
+                let answerText = "";
+
+                if (qType === "choice") {
+                  const idx = aData.optionIndex;
+                  const label = (typeof idx === "number" && qOptions[idx])
+                    ? qOptions[idx]
+                    : "(option)";
+                  answerText = label;
+                } else {
+                  answerText = aData.textAnswer || "";
+                }
+
+                line.textContent = (aData.author || "Unknown") + ": " + answerText;
+                answersBox.appendChild(line);
+              });
+            }
+          } catch (err) {
+            console.error("Error loading answers:", err);
+            answersBox.textContent = "Error loading answers: " + (err.message || "");
           }
         }
       } catch (err) {
         console.error("Error loading questions:", err);
-        qaListEl.textContent = "Error loading questions.";
+        qaListEl.textContent = "Error loading questions: " + (err.message || "");
       }
     }
 
@@ -715,6 +736,7 @@
     loadMessages();
     loadQuestions();
   </script>
+
 
 </body>
 </html>
