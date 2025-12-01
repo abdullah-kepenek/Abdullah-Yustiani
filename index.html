@@ -383,10 +383,11 @@
           createdAt: serverTimestamp()
         });
         await loadMessages();
-      } catch (err) {
+     } catch (err) {
         console.error("Error sending message:", err);
-        alert("Message could not be sent.");
+        alert("Message could not be sent: " + err.message);
       }
+
     }
 
     async function loadMessages() {
@@ -522,8 +523,9 @@
         await loadQuestions();
       } catch (err) {
         console.error("Error creating question:", err);
-        alert("Soru kaydedilemedi.");
+        alert("Soru kaydedilemedi: " + err.message);
       }
+
     }
 
     createQuestionBtn.addEventListener("click", createQuestion);
